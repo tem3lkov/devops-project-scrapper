@@ -1,12 +1,22 @@
 # client/client.py
-import argparse, requests, time, sys, json
+import argparse
+import json
+import sys
+import time
 
-def fetch(host, rows, parallel, concurrency):
+import requests
 
-    t0 = time.perf_counter() # Start timer
-    
-    # Call the API endpoint with the specified parameters
-    r = requests.get(
+
+def fetch(
+    host: str,
+    rows: int,
+    parallel: bool,
+    concurrency: int,
+) -> tuple[float, dict]:
+    """Call the /games endpoint and return (client_elapsed, json)."""
+    start = time.perf_counter()
+
+    response = requests.get(
         f"{host}/games",
         params={
             "rows": rows,
@@ -15,44 +25,69 @@ def fetch(host, rows, parallel, concurrency):
         },
         timeout=60,
     )
-    r.raise_for_status()
-    client_elapsed = round(time.perf_counter() - t0, 3) # Calculate elapsed time
-    return client_elapsed, r.json()
-
-def main():
-    # Use argparse to parse command line arguments
-    p = argparse.ArgumentParser("SteamScraper")
-
-    p.add_argument("--rows", type=int, help="N (1-100) games")
-    p.add_argument("--host", default="http://127.0.0.1:8000")
-    p.add_argument("--concurrency", type=int, default=20,
-                   help="# of concurrent requests")
-    
-    p.add_argument("--compare", action="store_true",
-                   help="Compare client and server time")
-    
-    p.add_argument("--raw", action="store_true",
-                      help="Show JSON response (no timing)")
+    response.raise_for_status()
+    client_elapsed = round(time.perf_counter() - start, 3)
+    return client_elapsed, response.json()
 
 
-    # Add mutually exclusive group for parallel and serial mode
-    mode = p.add_mutually_exclusive_group()
-    mode.add_argument("--parallel", action="store_true", help="Parallel mode (default)")
-    mode.add_argument("--serial",   action="store_true", help="Serial mode")
+def main() -> None:
+    parser = argparse.ArgumentParser("SteamScraper client")
 
+    parser.add_argument("--rows", type=int, help="N (1-100) games")
+    parser.add_argument("--host", default="http://127.0.0.1:8000")
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=20,
+        help="# of concurrent requests",
+    )
+    parser.add_argument(
+        "--compare",
+        action="store_true",
+        help="Compare client and server time",
+    )
+    parser.add_argument(
+        "--raw",
+        action="store_true",
+        help="Show JSON response (no timing)",
+    )
 
-    args = p.parse_args()
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
+        "--parallel",
+        action="store_true",
+        help="Parallel mode (default)",
+    )
+    mode_group.add_argument(
+        "--serial",
+        action="store_true",
+        help="Serial mode",
+    )
 
+    args = parser.parse_args()
     parallel = not args.serial
 
     if args.compare:
         for mode in ("serial", "parallel"):
-            client_t, resp = fetch(args.host, args.rows, mode == "parallel", args.concurrency)
-            print(f"{mode}: server={resp['elapsed']}s  client={client_t}s")
+            is_parallel = mode == "parallel"
+            client_t, resp = fetch(
+                args.host,
+                args.rows,
+                is_parallel,
+                args.concurrency,
+            )
+            server_t = resp["elapsed"]
+            print(
+                f"{mode}: server={server_t}s  client={client_t}s",
+            )
         return
 
-       
-    client_t, resp = fetch(args.host, args.rows, parallel, args.concurrency)
+    client_t, resp = fetch(
+        args.host,
+        args.rows,
+        parallel,
+        args.concurrency,
+    )
 
     if args.raw:
         print(json.dumps(resp, indent=2, ensure_ascii=False))
@@ -62,7 +97,8 @@ def main():
     server_t = resp["elapsed"]
 
     print(json.dumps(resp["data"], indent=2, ensure_ascii=False))
-    print(f"{mode_str}: client={client_t}s  server={server_t}s\n")
+    print(f"{mode_str}: client={client_t}s  server={server_t}s")
+
 
 if __name__ == "__main__":
     try:
