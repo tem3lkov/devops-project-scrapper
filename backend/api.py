@@ -58,4 +58,4 @@ async def games(
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    return {"status": "This should be changed! OK"}
