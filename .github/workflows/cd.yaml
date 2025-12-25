@@ -52,7 +52,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          kubectl port-forward svc/steamscraper 8000:8000 &
+          kubectl port-forward svc/steamscraper-backend 8000:8000 &
           sleep 2
           curl -f "http://localhost:8000/health"
           curl -f "http://localhost:8000/games?rows=1"
