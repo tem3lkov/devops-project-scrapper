@@ -1,0 +1,53 @@
+name: CD
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build_and_push_ghcr:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: meta
+        run: echo "image=ghcr.io/${{ github.repository_owner }}/steamscraper:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build image
+        run: docker build -t "${{ steps.meta.outputs.image }}" .
+
+      - name: Push image
+        run: docker push "${{ steps.meta.outputs.image }}"
+
+  deploy_to_kind:
+    runs-on: self-hosted
+    needs: [build_and_push_ghcr]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update image in deployment manifest
+        run: |
+          sed -i "s|IMAGE_PLACEHOLDER|${{ needs.build_and_push_ghcr.outputs.image }}|g" k8s/deployment.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deploy/steamscraper --timeout=120s
+
+      - name: Smoke test
+        run: |
+          kubectl port-forward svc/steamscraper 8000:8000 &
+          sleep 2
+          curl -f "http://localhost:8000/health"
+          curl -f "http://localhost:8000/games?rows=1"
