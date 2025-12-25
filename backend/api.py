@@ -44,7 +44,7 @@ async def games(
                 concurrency=concurrency,
             )
             data = await scraper.fetch_games()
-        except Exception as exc: 
+        except Exception as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return {
@@ -59,3 +59,4 @@ async def games(
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
