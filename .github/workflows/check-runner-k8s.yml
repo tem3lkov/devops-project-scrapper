@@ -1,6 +1,7 @@
 name: Check runner & k8s
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
