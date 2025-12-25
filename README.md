@@ -1,4 +1,3 @@
-````markdown
 # DevOps SteamScraper
 
 A tiny **Python + FastAPI** service I use to demonstrate DevOps practices for the *Modern Practices in DevOps* course at FMI.  
@@ -175,5 +174,3 @@ Some things that could be added on top:
 * Real Steam API calls & caching
 * DB + migrations (PostgreSQL + Alembic)
 * Front-end client with its own pipeline
-
-```
