@@ -1,0 +1,23 @@
+name: Check runner & k8s
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: self-hosted
+    steps:
+      - name: Who am I
+        run: |
+          whoami
+          pwd
+
+      - name: Docker info
+        run: |
+          docker ps || true
+          docker info | head -n 20 || true
+
+      - name: Kube nodes
+        run: |
+          kubectl config current-context || echo "no context"
+          kubectl get nodes || echo "no nodes?"
