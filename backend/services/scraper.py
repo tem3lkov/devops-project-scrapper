@@ -13,7 +13,9 @@ STORE_URL = "https://store.steampowered.com/app/{appid}"
 class SteamScraper:
     """Scrape game data from Steam/SteamSpy."""
 
-    def __init__(self, rows: int, parallel: bool = True, concurrency: int = 20) -> None:
+    def __init__(self, rows: int,
+                 parallel: bool = True,
+                 concurrency: int = 20) -> None:
         # Clamp user input to a reasonable range
         self.rows = max(1, min(rows, 100))
         self.parallel = parallel
@@ -124,3 +126,4 @@ class SteamScraper:
             return f"{cents / 100:.2f} EUR"
 
         return None
+
