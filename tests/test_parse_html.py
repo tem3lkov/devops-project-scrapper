@@ -44,10 +44,7 @@ def test_parse_oblivion_goty() -> None:
     assert game.price == "14.99 EUR"
     assert game.release_date == "11 Sep, 2007"
     assert game.metascore == 94
-    expected_name = (
-        "The Elder Scrolls IV: Oblivion® Game of the Year Edition "
-        "(2009)"
-    )
+    expected_name = "The Elder Scrolls IV: Oblivion® Game of the Year Edition " "(2009)"
     assert game.name == expected_name
 
 

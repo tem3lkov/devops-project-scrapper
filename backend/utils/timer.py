@@ -18,9 +18,7 @@ class Elapsed:
     def __call__(self) -> float:
         """Return the elapsed time in seconds (rounded to 3 decimals)."""
         now = time.perf_counter()
-        duration = (
-            self._elapsed if self._elapsed is not None else now - self._start
-        )
+        duration = self._elapsed if self._elapsed is not None else now - self._start
         return round(duration, 3)
 
 
