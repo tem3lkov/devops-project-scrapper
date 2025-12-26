@@ -40,6 +40,11 @@ jobs:
         run: |
           sed -i "s|IMAGE_PLACEHOLDER|${{ needs.build_and_push_ghcr.outputs.image }}|g" k8s/deployment.yaml
 
+      - name: Create kind cluster
+        run: |
+          kind delete cluster --name steamscraper || true
+          kind create cluster --name steamscraper
+
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/namespace.yaml
