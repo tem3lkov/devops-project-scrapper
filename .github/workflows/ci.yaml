@@ -41,8 +41,8 @@ jobs:
       - name: Format check (black)
         run: black --check .
 
-      - name: Unit tests (pytest)
-        run: pytest -q
+      - name: Tests with Coverage
+        run: pytest --cov=backend --cov-report=xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
