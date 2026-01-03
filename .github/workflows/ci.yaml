@@ -44,6 +44,11 @@ jobs:
       - name: Unit tests (pytest)
         run: pytest -q
 
+      - name: Tests with Coverage
+        run: |
+          pip install pytest-cov     
+          pytest --cov=backend --cov-report=xml
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
